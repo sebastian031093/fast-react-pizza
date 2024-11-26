@@ -13,7 +13,7 @@ function AppLayout() {
   //if(navigation.state === 'loading')
 
   return (
-    <div>
+    <div className="layout">
       {isLoading && <Loader />}
       <Header />
 

@@ -4,7 +4,7 @@ import Home from "./ui/Home";
 import Menu, { loader as menuLoader } from "./feactures/menu/Menu";
 import Cart from "./feactures/cart/Cart";
 import CreateOrder from "./feactures/order/CreateOrder";
-import Order from "./feactures/order/Order";
+import Order, { loader as orderLoader } from "./feactures/order/Order";
 import AppLayout from "./ui/AppLayout";
 import Error from "./ui/Error";
 
@@ -38,6 +38,8 @@ const router = createBrowserRouter([
       {
         path: "/order/:orderId",
         element: <Order />,
+        loader: orderLoader,
+        errorElement: <Error />,
       },
     ],
   },
