@@ -1,14 +1,18 @@
 import { Link } from "react-router-dom";
 import SearchOrder from "../feactures/order/SearchOrder";
+import UserName from "../feactures/user/UserName";
 
 function Header() {
   return (
-    <div>
-      <Link>Fast React Pizza CO.</Link>
+    <header className="bg-yellow-500 oppercase px-5 py-4 border-b border-stone-200 sm:px-6">
+      <Link className="uppercase tracking-widest font-bold ">
+        Fast React Pizza CO.
+      </Link>
       <p>Jonas My sensei</p>
 
       <SearchOrder />
-    </div>
+      <UserName />
+    </header>
   );
 }
 
