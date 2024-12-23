@@ -13,14 +13,17 @@ function AppLayout() {
   //if(navigation.state === 'loading')
 
   return (
-    <div className="layout">
+    <div className="grid grid-rows-[auto_1fr_auto] h-screen bg-stone-100">
       {isLoading && <Loader />}
       <Header />
 
-      <main>
-        <Outlet />
-        <CartOverview />
-      </main>
+      <div className="overflow-scroll">
+        <main className="">
+          {/* <main className=" max-w-3xl mx-auto bg-red-400"> */}
+          <Outlet />
+        </main>
+      </div>
+      <CartOverview />
     </div>
   );
 }
