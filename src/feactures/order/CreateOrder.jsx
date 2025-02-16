@@ -1,6 +1,7 @@
-import { Form, redirect, useNavigation } from "react-router-dom";
+import { Form, useNavigation, useActionData } from "react-router-dom";
 import { createOrder } from "../../services/apiRestaurant";
 import Button from "../../ui/Button";
+import { useSelector } from "react-redux";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = str =>
@@ -35,38 +36,64 @@ const fakeCart = [
 //TODO:writte data or mutate date on the server (React router actions)
 
 function CreateOrder() {
+  const { username } = useSelector(store => store.user);
+
   // const [withPriority, setWithPriority] = useState(false);
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const formErrors = useActionData();
 
   const cart = fakeCart;
 
   return (
-    <div>
-      <h2>Ready to order? Let&lsquo;s go!</h2>
+    <div className="px-4 py-6">
+      <h2 className="mb-8 text-xl font-semibold">
+        Ready to order? Let&lsquo;s go!
+      </h2>
 
       {/* <Form method="POST" action="order/new" > */}
       <Form method="POST">
-        <div>
-          <label>First Name</label>
-          <input className="inputSexy" type="text" name="customer" required />
+        <div className="mb-5 flex gap-2 flex-col sm:flex-row sm:items-center">
+          <label className="sm:basis-40 ">First name</label>
+          <input
+            className="inputSexy w-full"
+            type="text"
+            defaultValue={username}
+            name="customer"
+            required
+          />
         </div>
 
-        <div>
-          <label>Phone number</label>
-          <div>
-            <input className="inputSexy" type="tel" name="phone" required />
+        <div className="mb-5 flex gap-2 flex-col sm:flex-row sm:items-center">
+          <label className="sm:basis-40">Phone number</label>
+          <div className="grow">
+            <input
+              className="inputSexy w-full"
+              type="tel"
+              name="phone"
+              required
+            />
+            {formErrors?.phone && (
+              <p className="mt-2 rounded-md bg-red-100 p-2 text-xs text-red-700">
+                {formErrors.phone}
+              </p>
+            )}
           </div>
         </div>
 
-        <div>
-          <label>Address</label>
-          <div>
-            <input className="inputSexy" type="text" name="address" required />
+        <div className="mb-5 flex gap-2 flex-col sm:flex-row sm:items-center">
+          <label className="sm:basis-40">Address</label>
+          <div className="grow">
+            <input
+              className="inputSexy w-full"
+              type="text"
+              name="address"
+              required
+            />
           </div>
         </div>
 
-        <div>
+        <div className="mb-12 flex items-center gap-5">
           <input
             className="h-6 w-6 accent-yellow-400 focus:outline-none focus:ring focus:ring-yellow-400 focus:ring-offset-2"
             type="checkbox"
@@ -100,17 +127,16 @@ export async function action({ request }) {
     priority: data.priority === "on",
   };
 
-  const newOrder = await createOrder(order);
-
   const errors = {};
   if (!isValidPhone(order.phone)) {
     errors.phone =
       "Please give us your corrrect phone number. We migth need it to correct you.";
   }
 
-  /* if (Object.keys(errors).length > 0) return errors;
-
+  if (Object.keys(errors).length > 0) return errors;
+  /*
   //If everithyng is ok, created a new order an redirect
+  // const newOrder = await createOrder(order);
   return redirect(`/order/${newOrder.id}`); */
 
   return null;
