@@ -1,7 +1,10 @@
-import { Form, useNavigation, useActionData } from "react-router-dom";
-import { createOrder } from "../../services/apiRestaurant";
-import Button from "../../ui/Button";
-import { useSelector } from "react-redux";
+import { Form, useNavigation, useActionData, redirect } from 'react-router-dom';
+import { createOrder } from '../../services/apiRestaurant';
+import Button from '../../ui/Button';
+import { useDispatch, useSelector } from 'react-redux';
+import { getCart } from '../cart/cartSlice';
+import EmptyCart from '../cart/EmptyCart';
+import { fetchAdress } from '../user/userSlice';
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = str =>
@@ -9,7 +12,7 @@ const isValidPhone = str =>
     str
   );
 
-const fakeCart = [
+/* const fakeCart = [
   {
     pizzaId: 12,
     name: "Mediterranean",
@@ -31,19 +34,31 @@ const fakeCart = [
     unitPrice: 15,
     totalPrice: 15,
   },
-];
+]; */
 
 //TODO:writte data or mutate date on the server (React router actions)
 
 function CreateOrder() {
-  const { username } = useSelector(store => store.user);
+  const {
+    username,
+    status: addressStatus,
+    position,
+    address,
+    error: errorLoadingAddress,
+  } = useSelector(store => store.user);
 
+  const isLoadingAddress = addressStatus === 'loading';
+
+  const dispatch = useDispatch();
   // const [withPriority, setWithPriority] = useState(false);
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
+  const isSubmitting = navigation.state === 'submitting';
   const formErrors = useActionData();
 
-  const cart = fakeCart;
+  // const cart = fakeCart;
+  const cart = useSelector(getCart);
+
+  if (!cart) return <EmptyCart />;
 
   return (
     <div className="px-4 py-6">
@@ -81,16 +96,38 @@ function CreateOrder() {
           </div>
         </div>
 
-        <div className="mb-5 flex gap-2 flex-col sm:flex-row sm:items-center">
+        <div className="mb-5 flex gap-2 flex-col sm:flex-row sm:items-center relative">
           <label className="sm:basis-40">Address</label>
           <div className="grow">
             <input
               className="inputSexy w-full"
               type="text"
               name="address"
+              disabled={isLoadingAddress}
+              defaultValue={address}
               required
             />
           </div>
+
+          {addressStatus === 'error' && (
+            <p className="mt-2 rounded-md bg-red-100 p-2 text-xs text-red-700">
+              {errorLoadingAddress}
+            </p>
+          )}
+
+          {!position.latitud && !position.longitude && (
+            <span className="absolute right-[3px] top-[3px] z-50 sm:right-[5px] ms:top-[5px] ">
+              <Button
+                disabled={isLoadingAddress}
+                onClick={event => {
+                  event.preventDefoult();
+                  dispatch(fetchAdress());
+                }}
+              >
+                Get position
+              </Button>
+            </span>
+          )}
         </div>
 
         <div className="mb-12 flex items-center gap-5">
@@ -107,8 +144,8 @@ function CreateOrder() {
 
         <div>
           <input type="hidden" name="cart" value={JSON.stringify(cart)} />
-          <Button type="primary" disabled={isSubmitting}>
-            {isSubmitting ? "Placing order" : "Order now"}
+          <Button type="primary" disabled={isSubmitting || isLoadingAddress}>
+            {isSubmitting ? 'Placing order' : 'Order now'}
           </Button>
         </div>
       </Form>
@@ -124,22 +161,20 @@ export async function action({ request }) {
   const order = {
     ...data,
     cart: JSON.parse(data.cart),
-    priority: data.priority === "on",
+    priority: data.priority === 'on',
   };
 
   const errors = {};
   if (!isValidPhone(order.phone)) {
     errors.phone =
-      "Please give us your corrrect phone number. We migth need it to correct you.";
+      'Please give us your corrrect phone number. We migth need it to correct you.';
   }
 
   if (Object.keys(errors).length > 0) return errors;
-  /*
-  //If everithyng is ok, created a new order an redirect
-  // const newOrder = await createOrder(order);
-  return redirect(`/order/${newOrder.id}`); */
 
-  return null;
+  //If everithyng is ok, created a new order an redirect
+  const newOrder = await createOrder(order);
+  return redirect(`/order/${newOrder.id}`);
 }
 
 export default CreateOrder;
